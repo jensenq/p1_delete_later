@@ -1,7 +1,6 @@
 USE standard
 
 mode edge = struct (int sourceVertex, destVertex, edgeWeight);
-
 mode graph = struct (int vertices, edges, flex [1]edge edgematrix);
 
 proc loadGraph = (string filename) graph:
