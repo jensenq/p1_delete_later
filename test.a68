@@ -1,0 +1,38 @@
+
+MODE EDGE = STRUCT (INT sourcevertex, destvertex, edgeweight);
+MODE GRAPH = STRUCT (INT vertices, INT edges, FLEX [1:0] EDGE edgematrix);
+
+PROC loadgraph = (STRING filename) GRAPH: BEGIN
+  FILE f;
+  open (f, filename, stand in channel);
+
+  GRAPH g;
+  INT verts;
+  INT edges;
+  get(f, (verts, edges, new line));
+  printf (($ %d, " ", %d $, verts, edges));
+  print(new line);
+
+  INT srcv;
+  INT destv;
+  INT weight;
+  FOR i FROM 0 TO edges-1 DO 
+    get(f, (srcv, destv, weight, new line));
+    printf (($ %d, " ", %d, " ", %d $, srcv, destv, weight));
+    print(new line)
+  OD;
+
+
+
+  close(f);
+  g
+END;
+
+
+main:(
+  IF argc<4 THEN 
+    print(("Usage ", new line))
+  ELSE
+    loadgraph(argv(4))
+  FI
+)

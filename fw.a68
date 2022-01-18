@@ -1,57 +1,56 @@
-USE standard
 
-mode edge = struct (int sourceVertex, destVertex, edgeWeight);
-mode graph = struct (int vertices, edges, flex [1]edge edgematrix);
+MODE EDGE = STRUCT (INT sourcevertex, destvertex, edgeweight);
+MODE GRAPH = STRUCT (INT vertices, INT edges, FLEX [1:0] EDGE edgematrix);
 
-proc loadGraph = (string filename) graph:
-begin
-  file f;
+PROC loadgraph = (STRING filename) GRAPH: BEGIN
+  FILE f
   open (f, filename, stand in channel);
 
-  graph G;
-  get(f, (vertices of G, edges of G, new line));
+  GRAPH g;
+  get(f, (vertices of g, edges of g, new line));
+  print(( "vertices: ", vertices of g, " | edges: ", edges of g  new line))
 
-  int srcV;
-  int dstV;
-  int weight;
-  for i from 0 to edges of G do
-    get(f, (srcV, dstV, weight, new line))
-    sourceVertex of edgeMatrix[i] of G := srcV;
-    destVertex of edgeMatrix[i] of G := dstV;
-    edgeWeight of edgeMatrix[i] of G := weight;
+  INT srcv;
+  INT destv;
+  INT weight;
+  for i from 0 to edges of g do
+    get(f, (srcv, destv, weight, new line))
+    sourcevertex of (edgematrix[i] of g) := srcv;
+    destvertex of   (edgematrix[i] of g) := destv;
+    edgeweight of   (edgematrix[i] of g) := weight;
   od
 
   close(f);
-  G;
+  g;
 
-end;
+END;
 
 
 
-proc floydWarshall = (graph g) void: begin
-    [0: vertices of g, 0: vertices of g ] int processWeights, processedVertices
-    int i,j,k;
+PROC floydwarshall = (GRAPH g) VOID: BEGIN
+    [0: vertices of g, 0: vertices of g ] INT processweights, processedvertices
+    INT i,j,k;
  
     FOR i FROM 0 WHILE i< vertices of g DO
       FOR j FROM 0 WHILE j< vertices of g DO
-        processWeights[i,j] := 65535 // hard-coding max short lol.
-        processedVertices[i,j] := if i!=j then j+1 else 0 fi
+        processweights[i,j] := 32767; # hard-coding max short #
+        processedvertices[i,j] := ( i/=j | j+1 | 0 )
       OD
     OD
       
-    FOR i FROM 0 WHILE i< edges of g DO
-      int x := sourceVertex of (edgeMatrix of g [i]) -1
-      int y := destVertex of (edgeMatrix of g [i]) -1
-      processWeights[x,y] := edgeWeight of (edgeMatrix of g [i])
+    FOR i FROM 0 WHILE i<edges of g DO
+      INT x := sourcevertex of (edgematrix of g [i]) -1
+      INT y := destvertex of (edgematrix of g [i]) -1
+      processweights[x,y] := edgeweight of (edgematrix of g [i])
     OD
 
     FOR i FROM 0 WHILE i< vertices of g DO
       FOR j FROM 0 WHILE j< vertices of g DO
         FOR k FROM 0 WHILE k< vertices of g DO
-          if processWeights[j,i] + processWeights[i,k] < processWeights[j,k] then
-            processWeights[j,k] = processWeights[j,i] + processWeights[i,k];
-            processedVertices[j,k] = processedVertices[j,i];
-          fi
+          IF processweights[j,i] + processweights[i,k] < processweights[j,k] THEN
+            processweights[j,k] = processweights[j,i] + processweights[i,k];
+            processedvertices[j,k] = processedvertices[j,i];
+          FI
         OD
       OD
     OD
@@ -59,26 +58,26 @@ proc floydWarshall = (graph g) void: begin
     printf("pair    dist   path");
     FOR i FROM 0 WHILE i< vertices of g DO
       FOR j FROM 0 WHILE j< vertices of g DO
-        if i!=j then
+        IF i/=j THEN
           printf()
           k := i+1
-          WHILE j!=k+1  DO
-            k := processedVertices[k-1,j]
-            // algol68 is 1 based not 0 based - On your print inside the while loop do k-1
+          WHILE j/=k+1  DO
+            k := processedvertices[k-1,j]
+             #algol68 is 1 based not 0 based - On your prINT inside the while loop do k-1 #
             printf()
           OD
-        fi
+        FI
       OD
     OD
     printf("\n")
-}
+END
 
 
 main:(
-  if argc!=2 then 
+  IF argc/=2 THEN 
     printf()
-  else
-    floydWarshall(loadGraph(argv(1)));
-    0
+  ELSE
+    floydwarshall(loadgraph(argv(1)))
+  FI
 )
 
