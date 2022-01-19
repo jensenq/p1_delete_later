@@ -42,58 +42,57 @@ END;
 
 
 PROC floydwarshall = (GRAPH g) VOID: BEGIN
-    [0: vertices of g, 0: vertices of g ] INT processweights, processedvertices
-    INT i,j,k;
- 
-    FOR i FROM 0 WHILE i< vertices of g DO
-      FOR j FROM 0 WHILE j< vertices of g DO
-        processweights[i,j] := 32767; # hard-coding max short #
-        processedvertices[i,j] := ( i/=j | j+1 | 0 )
-      OD
-    OD
-      
-    FOR i FROM 0 WHILE i<edges of g DO
-      INT x := sourcevertex of (edgematrix of g [i]) -1
-      INT y := destvertex of (edgematrix of g [i]) -1
-      processweights[x,y] := edgeweight of (edgematrix of g [i])
-    OD
+  #printf (($ %d $, edgeweight OF (edgematrix OF g)[1])); print(new line);#
 
-    FOR i FROM 0 WHILE i< vertices of g DO
-      FOR j FROM 0 WHILE j< vertices of g DO
-        FOR k FROM 0 WHILE k< vertices of g DO
-          IF processweights[j,i] + processweights[i,k] < processweights[j,k] THEN
-            processweights[j,k] = processweights[j,i] + processweights[i,k];
-            processedvertices[j,k] = processedvertices[j,i];
-          FI
-        OD
-      OD
-    OD
+  [0: vertices OF g, 0: vertices OF g ] INT processweights, processedvertices;
+  INT i,j,k;
 
-    printf("pair    dist   path");
-    FOR i FROM 0 WHILE i< vertices of g DO
-      FOR j FROM 0 WHILE j< vertices of g DO
-        IF i/=j THEN
-          printf()
-          k := i+1
-          WHILE j/=k+1  DO
-            k := processedvertices[k-1,j]
-             #algol68 is 1 based not 0 based - On your prINT inside the while loop do k-1 #
-            printf()
-          OD
+  FOR i FROM 1 WHILE i< vertices OF g DO
+    FOR j FROM 1 WHILE j< vertices OF g DO
+      processweights[i,j] := 32767; # hard-coding max short #
+      processedvertices[i,j] := ( i/=j | j+1 | 0 )
+    OD
+  OD;
+    
+  FOR i FROM 1 WHILE i<edges OF g DO
+    INT x := sourcevertex OF (edgematrix OF g)[i] -1;
+    INT y := destvertex OF (edgematrix OF g)[i] -1;
+    processweights[x,y] := edgeweight OF (edgematrix OF g)[i]
+  OD;
+
+  FOR i FROM 1 WHILE i< vertices OF g DO
+    FOR j FROM 1 WHILE j< vertices OF g DO
+      FOR k FROM 1 WHILE k< vertices OF g DO
+        IF processweights[j,i] + processweights[i,k] < processweights[j,k] THEN
+          processweights[j,k] := processweights[j,i] + processweights[i,k];
+          processedvertices[j,k] := processedvertices[j,i]
         FI
       OD
     OD
-    printf("\n")
-END
+  OD;
 
-
+  print("pair    dist   path");
+  FOR i FROM 1 WHILE i< vertices OF g DO
+    FOR j FROM 1 WHILE j< vertices OF g DO
+      IF i/=j THEN
+        print(new line);
+        printf(($ %d, " -> ", %d, " ", %d, " ", %d $, i+1, j+1, processweights[i,j], i+1));
+        k := i+1;
+        WHILE k/=j+1 DO
+          k := processedvertices[k-1,j];
+          printf (($ "->", %d$, k-1))
+        OD
+      FI
+    OD
+  OD;
+  print(newline)
+END;
 
 
 main:(
   IF argc<4 THEN 
     print(("Usage: a68g test.a68 - network < network", new line))
   ELSE
-    #floydwarshall(loadgraph(argv(4)))#
-    loadgraph(argv(4))
+    floydwarshall(loadgraph(argv(4)))
   FI
 )
