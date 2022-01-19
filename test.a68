@@ -47,22 +47,23 @@ PROC floydwarshall = (GRAPH g) VOID: BEGIN
   [0: vertices OF g, 0: vertices OF g ] INT processweights, processedvertices;
   INT i,j,k;
 
-  FOR i FROM 1 WHILE i< vertices OF g DO
-    FOR j FROM 1 WHILE j< vertices OF g DO
-      processweights[i,j] := 32767; # hard-coding max short #
+  FOR i FROM 1 WHILE i<= vertices OF g DO
+    FOR j FROM 1 WHILE j<= vertices OF g DO
+      #processweights[i,j] := 32767;  hard-coding max short #
+      processweights[i,j] := 99;
       processedvertices[i,j] := ( i/=j | j+1 | 0 )
     OD
   OD;
     
-  FOR i FROM 1 WHILE i<edges OF g DO
+  FOR i FROM 1 WHILE i<=edges OF g DO
     INT x := sourcevertex OF (edgematrix OF g)[i] -1;
     INT y := destvertex OF (edgematrix OF g)[i] -1;
     processweights[x,y] := edgeweight OF (edgematrix OF g)[i]
   OD;
 
-  FOR i FROM 1 WHILE i< vertices OF g DO
-    FOR j FROM 1 WHILE j< vertices OF g DO
-      FOR k FROM 1 WHILE k< vertices OF g DO
+  FOR i FROM 1 WHILE i<= vertices OF g DO
+    FOR j FROM 1 WHILE j<= vertices OF g DO
+      FOR k FROM 1 WHILE k<= vertices OF g DO
         IF processweights[j,i] + processweights[i,k] < processweights[j,k] THEN
           processweights[j,k] := processweights[j,i] + processweights[i,k];
           processedvertices[j,k] := processedvertices[j,i]
@@ -72,11 +73,11 @@ PROC floydwarshall = (GRAPH g) VOID: BEGIN
   OD;
 
   print("pair    dist   path");
-  FOR i FROM 1 WHILE i< vertices OF g DO
-    FOR j FROM 1 WHILE j< vertices OF g DO
+  FOR i FROM 1 WHILE i<= vertices OF g DO
+    FOR j FROM 1 WHILE j<= vertices OF g DO
       IF i/=j THEN
         print(new line);
-        printf(($ %d, " -> ", %d, " ", %d, " ", %d $, i+1, j+1, processweights[i,j], i+1));
+        printf(($ %d, " -> ", %d, " ", %3d, " ", %5d $, i, j, processweights[i,j], i));
         k := i+1;
         WHILE k/=j+1 DO
           k := processedvertices[k-1,j];
