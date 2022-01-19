@@ -1,4 +1,7 @@
 
+# Usage: a68g test.a68 - network < network #
+
+
 MODE EDGE = STRUCT (INT sourcevertex, destvertex, edgeweight);
 MODE GRAPH = STRUCT (INT vertices, INT edges, FLEX [1:0] EDGE edgematrix);
 
@@ -6,33 +9,91 @@ PROC loadgraph = (STRING filename) GRAPH: BEGIN
   FILE f;
   open (f, filename, stand in channel);
 
-  GRAPH g;
   INT verts;
   INT edges;
   get(f, (verts, edges, new line));
-  printf (($ %d, " ", %d $, verts, edges));
-  print(new line);
 
   INT srcv;
   INT destv;
   INT weight;
-  FOR i FROM 0 TO edges-1 DO 
+  FLEX [edges] EDGE matrix;
+
+  FOR i FROM 1 TO edges DO 
     get(f, (srcv, destv, weight, new line));
-    printf (($ %d, " ", %d, " ", %d $, srcv, destv, weight));
-    print(new line)
+    #printf (($ %d, " ", %d, " ", %d $, srcv, destv, weight)); print(new line);#
+    EDGE e := (srcv, destv, weight);
+    matrix[i] := e
   OD;
 
 
+  #
+  printf (($ %d, " ", %d $, vertices OF g, edges OF g)); print(new line);
+  FOR i FROM 1 TO edges DO 
+    printf (($ %d $, sourcevertex OF (edgematrix OF g) [i])); print(new line)
+  OD;
+  #
 
   close(f);
+
+  GRAPH g := (verts, edges, matrix);
   g
+
 END;
+
+
+PROC floydwarshall = (GRAPH g) VOID: BEGIN
+    [0: vertices of g, 0: vertices of g ] INT processweights, processedvertices
+    INT i,j,k;
+ 
+    FOR i FROM 0 WHILE i< vertices of g DO
+      FOR j FROM 0 WHILE j< vertices of g DO
+        processweights[i,j] := 32767; # hard-coding max short #
+        processedvertices[i,j] := ( i/=j | j+1 | 0 )
+      OD
+    OD
+      
+    FOR i FROM 0 WHILE i<edges of g DO
+      INT x := sourcevertex of (edgematrix of g [i]) -1
+      INT y := destvertex of (edgematrix of g [i]) -1
+      processweights[x,y] := edgeweight of (edgematrix of g [i])
+    OD
+
+    FOR i FROM 0 WHILE i< vertices of g DO
+      FOR j FROM 0 WHILE j< vertices of g DO
+        FOR k FROM 0 WHILE k< vertices of g DO
+          IF processweights[j,i] + processweights[i,k] < processweights[j,k] THEN
+            processweights[j,k] = processweights[j,i] + processweights[i,k];
+            processedvertices[j,k] = processedvertices[j,i];
+          FI
+        OD
+      OD
+    OD
+
+    printf("pair    dist   path");
+    FOR i FROM 0 WHILE i< vertices of g DO
+      FOR j FROM 0 WHILE j< vertices of g DO
+        IF i/=j THEN
+          printf()
+          k := i+1
+          WHILE j/=k+1  DO
+            k := processedvertices[k-1,j]
+             #algol68 is 1 based not 0 based - On your prINT inside the while loop do k-1 #
+            printf()
+          OD
+        FI
+      OD
+    OD
+    printf("\n")
+END
+
+
 
 
 main:(
   IF argc<4 THEN 
-    print(("Usage ", new line))
+    print(("Usage: a68g test.a68 - network < network", new line))
   ELSE
+    #floydwarshall(loadgraph(argv(4)))#
     loadgraph(argv(4))
   FI
 )
